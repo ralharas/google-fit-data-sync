@@ -12,7 +12,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-SCOPES = ['https://www.googleapis.com/auth/fitness.activity.read']
+SCOPES = ['https://www.googleapis.com/auth/fitness.activity.read', 'https://www.googleapis.com/auth/fitness.sleep.read']
 
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
@@ -135,10 +135,68 @@ def run_sync(historical=False):
             output_file = os.path.join(output_dir, 'steps_data_daily.csv')
 
         pd.DataFrame(all_rows).to_csv(output_file, index=False)
-
+        
+        # Now collect sleep data
+        sleep_rows = []
+        current = start_date
+        
+        while current < end_date:
+            next_month = current + datetime.timedelta(days=30)
+            start_time = int(current.timestamp() * 1000)
+            end_time = int(min(next_month, end_date).timestamp() * 1000)
+            
+            # Sleep data request
+            sleep_body = {
+                "aggregateBy": [{
+                    "dataTypeName": "com.google.sleep.segment"
+                }],
+                "bucketByTime": {"durationMillis": 86400000},
+                "startTimeMillis": start_time,
+                "endTimeMillis": end_time
+            }
+            
+            try:
+                sleep_response = fitness_service.users().dataset().aggregate(userId='me', body=sleep_body).execute()
+                
+                for bucket in sleep_response['bucket']:
+                    for dataset in bucket['dataset']:
+                        for point in dataset['point']:
+                            start_sleep = datetime.datetime.fromtimestamp(int(point['startTimeNanos']) / 1e9)
+                            end_sleep = datetime.datetime.fromtimestamp(int(point['endTimeNanos']) / 1e9)
+                            sleep_type = point['value'][0]['intVal'] if point['value'] else 0
+                            duration_minutes = (end_sleep - start_sleep).total_seconds() / 60
+                            sleep_rows.append({
+                                'start': start_sleep, 
+                                'end': end_sleep, 
+                                'sleep_type': sleep_type,
+                                'duration_minutes': duration_minutes
+                            })
+            except Exception as sleep_error:
+                # Sleep data might not be available or permission denied
+                pass
+                
+            current = next_month
+        
+        # Save sleep data
+        sleep_output_dir = os.path.join(project_root, "Sleep", "Raw")
+        os.makedirs(sleep_output_dir, exist_ok=True)
+        
+        if historical:
+            sleep_output_file = os.path.join(sleep_output_dir, 'sleep_data_full.csv')
+        else:
+            sleep_output_file = os.path.join(sleep_output_dir, 'sleep_data_daily.csv')
+        
+        if sleep_rows:
+            pd.DataFrame(sleep_rows).to_csv(sleep_output_file, index=False)
+        
         if historical:
             result_label.config(text=f"✅ Full history saved!")
-            messagebox.showinfo("Success", f"ALL steps data saved to:\n{output_file}")
+            message = f"Steps data: {output_file}\n"
+            if sleep_rows:
+                message += f"Sleep data: {sleep_output_file}"
+            else:
+                message += "Sleep data: No sleep data found (may need to enable in Google Fit)"
+            messagebox.showinfo("Success", message)
         else:
             result_label.config(text=f"✅ Daily sync done!")
             # Note: GUI-only mode, no console output
@@ -159,11 +217,12 @@ def start_sync():
 
 if __name__ == '__main__':
     root = Tk()
-    root.title("Google Fit Full Sync")
-    root.geometry("400x200")
+    root.title("Google Fit Data Sync")
+    root.geometry("450x250")
 
     Label(root, text="Connect & Sync ALL Google Fit Data", font=("Helvetica", 14)).pack(pady=20)
-    Button(root, text="Start Full Import + Daily Auto", command=start_sync, height=2, width=30).pack()
+    Label(root, text="Collects: Steps + Sleep Data", font=("Helvetica", 10), fg="gray").pack()
+    Button(root, text="Start Full Import + Daily Auto", command=start_sync, height=2, width=30).pack(pady=10)
     result_label = Label(root, text="", font=("Helvetica", 12))
     result_label.pack(pady=20)
 

@@ -36,5 +36,6 @@ oauth_config.json
 
 # CSV output files
 Steps/
+Sleep/
 *.csv
 
