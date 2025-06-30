@@ -9,26 +9,20 @@ A cross-platform application to sync and export your Google Fit step count data 
 - 🔄 Historical data import (from 2022)
 - ⏰ Daily automatic sync
 - 🖥️ Cross-platform support (Windows, macOS, Linux)
+- ✅ **No setup required** - OAuth credentials built-in!
 
-## Quick Start
+## Quick Start for Windows Users
 
-### Download Pre-built Executables
+### Download and Run - That's It!
 
 1. Go to the [Releases](../../releases) page
-2. Download the appropriate file for your operating system:
-   - **Windows**: `GoogleFitSync.exe`
-   - **macOS**: `GoogleFitSync` (macOS)
-   - **Linux**: `GoogleFitSync` (Linux)
+2. Download `GoogleFitSync-Windows.zip`
+3. Extract the zip file
+4. Double-click `GoogleFitSync.exe`
+5. Sign in with your Google account when prompted
+6. Click "Start Full Import + Daily Auto"
 
-### Setup Google Fit API
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable the Google Fit API
-4. Create credentials (OAuth 2.0 Client ID)
-5. Download the credentials and rename to `client_secret.json`
-6. Copy `client_secret.json.template` to `client_secret.json` and fill in your credentials
-7. Place `client_secret.json` in the same directory as the executable
+**No technical setup needed!** OAuth credentials are embedded in the app.
 
 ### Usage
 

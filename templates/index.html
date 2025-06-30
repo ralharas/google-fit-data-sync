@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Fit Sync</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
+        button { padding: 15px 30px; margin: 10px; font-size: 16px; }
+        .success { color: green; } .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🏃‍♂️ Google Fit Data Sync</h1>
+    
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p class="{% if '✅' in message %}success{% else %}error{% endif %}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <h3>Step 1: Authorize Google Fit Access</h3>
+    <a href="/authorize"><button>🔐 Authorize with Google</button></a>
+    
+    <h3>Step 2: Sync Your Data</h3>
+    <form method="post" action="/sync">
+        <button type="submit" name="sync_type" value="recent">📅 Sync Recent (7 days)</button>
+        <button type="submit" name="sync_type" value="historical">📊 Full Historical Sync</button>
+    </form>
+    
+    <p><em>Files will be automatically downloaded when sync completes.</em></p>
+</body>
+</html>

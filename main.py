@@ -25,8 +25,18 @@ def resource_path(relative_path):
 
 def run_sync(historical=False):
     try:
-        # Use the resource_path function to find client_secret.json
-        client_secret_file = resource_path('client_secret.json')
+        # Embedded OAuth configuration - no external files needed
+        client_config = {
+            "installed": {
+                "client_id": "340362959053-mpj1ck0j6oj568reff7rdo7fd8in46d4.apps.googleusercontent.com",
+                "project_id": "dataautomation-464320", 
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_secret": "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",
+                "redirect_uris": ["http://localhost"]
+            }
+        }
         
         # For token.json, we need to save it to a writable location
         # Use the user's home directory for persistent storage
@@ -41,7 +51,7 @@ def run_sync(historical=False):
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(client_secret_file, SCOPES)
+                flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
                 creds = flow.run_local_server(port=8080)
             with open(token_file, 'w') as token:
                 token.write(creds.to_json())

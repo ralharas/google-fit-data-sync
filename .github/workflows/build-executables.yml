@@ -1,0 +1,89 @@
+name: Build Executables
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            executable_name: GoogleFitSync.exe
+            build_command: pyinstaller --onefile --windowed --name GoogleFitSync main.py
+          - os: macos-latest
+            executable_name: GoogleFitSync
+            build_command: pyinstaller --onefile --windowed --name GoogleFitSync main.py
+          - os: ubuntu-latest
+            executable_name: GoogleFitSync
+            build_command: pyinstaller --onefile --name GoogleFitSync main.py
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build executable
+      run: ${{ matrix.build_command }}
+    
+    - name: Upload executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: GoogleFitSync-${{ matrix.os }}
+        path: dist/${{ matrix.executable_name }}
+        retention-days: 90
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+    - name: Download Windows executable
+      uses: actions/download-artifact@v4
+      with:
+        name: GoogleFitSync-windows-latest
+        path: ./windows/
+    
+    - name: Download macOS executable
+      uses: actions/download-artifact@v4
+      with:
+        name: GoogleFitSync-macos-latest
+        path: ./macos/
+    
+    - name: Download Linux executable
+      uses: actions/download-artifact@v4
+      with:
+        name: GoogleFitSync-ubuntu-latest
+        path: ./linux/
+    
+    - name: Create release archives
+      run: |
+        cd windows && zip -r ../GoogleFitSync-Windows.zip GoogleFitSync.exe
+        cd ../macos && zip -r ../GoogleFitSync-macOS.zip GoogleFitSync
+        cd ../linux && zip -r ../GoogleFitSync-Linux.zip GoogleFitSync
+    
+    - name: Upload release assets
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          GoogleFitSync-Windows.zip
+          GoogleFitSync-macOS.zip
+          GoogleFitSync-Linux.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
