@@ -2,11 +2,21 @@ FOR MAC USERS - IMPORTANT!
 
 When you try to open GoogleFitSync, you'll see a security warning.
 
-HERE'S HOW TO FIX IT (30 seconds):
+IF RIGHT-CLICK → OPEN DOESN'T WORK, TRY THIS:
 
-1. Right-click on "GoogleFitSync" 
-2. Choose "Open" from the menu
-3. Click "Open" when asked "Are you sure?"
+METHOD 1 - System Preferences:
+1. Try to open GoogleFitSync (it will be blocked)
+2. Go to System Preferences → Security & Privacy → General
+3. Look for "GoogleFitSync was blocked because..."
+4. Click "Open Anyway"
+5. Confirm when asked
+
+METHOD 2 - Terminal (if Method 1 fails):
+1. Open Terminal (Applications → Utilities → Terminal)
+2. Type: xattr -cr 
+3. Drag the GoogleFitSync file into Terminal
+4. Press Enter
+5. Now try opening GoogleFitSync normally
 
 That's it! The app will work normally after this one-time step.
 
