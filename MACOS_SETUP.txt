@@ -11,7 +11,15 @@ METHOD 1 - System Preferences:
 4. Click "Open Anyway"
 5. Confirm when asked
 
-METHOD 2 - Terminal (if Method 1 fails):
+METHOD 2 - Use Helper Script (Easy):
+1. Download fix-macos-security.sh from the GitHub repo
+2. Open Terminal (Applications → Utilities → Terminal)
+3. Type: chmod +x 
+4. Drag fix-macos-security.sh into Terminal, press Enter
+5. Type: ./fix-macos-security.sh
+6. Press Enter - script will automatically fix the security warning
+
+METHOD 3 - Manual Terminal (if others fail):
 1. Open Terminal (Applications → Utilities → Terminal)
 2. Type: xattr -cr 
 3. Drag the GoogleFitSync file into Terminal
