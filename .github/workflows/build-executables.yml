@@ -16,13 +16,13 @@ jobs:
         include:
           - os: windows-latest
             executable_name: GoogleFitSync.exe
-            build_command: pyinstaller --onefile --windowed --name GoogleFitSync main.py
+            build_command: pyinstaller --onefile --windowed --add-data "oauth_config.json;." --name GoogleFitSync main.py
           - os: macos-latest
             executable_name: GoogleFitSync
-            build_command: pyinstaller --onefile --windowed --name GoogleFitSync main.py
+            build_command: pyinstaller --onefile --windowed --add-data "oauth_config.json:." --name GoogleFitSync main.py
           - os: ubuntu-latest
             executable_name: GoogleFitSync
-            build_command: pyinstaller --onefile --name GoogleFitSync main.py
+            build_command: pyinstaller --onefile --add-data "oauth_config.json:." --name GoogleFitSync main.py
 
     steps:
     - uses: actions/checkout@v4
@@ -37,6 +37,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
+    
+    - name: Create OAuth config file
+      run: |
+        echo '{"client_id": "${{ secrets.GOOGLE_CLIENT_ID || '340362959053-mpj1ck0j6oj568reff7rdo7fd8in46d4.apps.googleusercontent.com' }}", "client_secret": "${{ secrets.GOOGLE_CLIENT_SECRET || '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' }}"}' > oauth_config.json
     
     - name: Build executable
       env:

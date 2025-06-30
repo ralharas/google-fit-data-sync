@@ -29,6 +29,7 @@ ENV/
 token.json
 .google_fit_token.json
 client_secret.json
+oauth_config.json
 
 # Environment files
 .env

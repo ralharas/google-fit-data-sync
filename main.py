@@ -25,15 +25,31 @@ def resource_path(relative_path):
 
 def run_sync(historical=False):
     try:
-        # Embedded OAuth configuration - no external files needed
+        # OAuth configuration from environment variables or config file
+        client_id = os.getenv("GOOGLE_CLIENT_ID")
+        client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+        
+        # If not in environment, try to load from config file
+        if not client_id or not client_secret:
+            config_file = resource_path("oauth_config.json")
+            if os.path.exists(config_file):
+                import json
+                with open(config_file, 'r') as f:
+                    config = json.load(f)
+                client_id = config.get("client_id")
+                client_secret = config.get("client_secret")
+        
+        if not client_id or not client_secret:
+            raise Exception("OAuth credentials not found. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables or provide oauth_config.json file.")
+        
         client_config = {
             "installed": {
-                "client_id": os.getenv("GOOGLE_CLIENT_ID", "340362959053-mpj1ck0j6oj568reff7rdo7fd8in46d4.apps.googleusercontent.com"),
+                "client_id": client_id,
                 "project_id": "dataautomation-464320", 
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                "client_secret": os.getenv("GOOGLE_CLIENT_SECRET", "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"),
+                "client_secret": client_secret,
                 "redirect_uris": ["http://localhost"]
             }
         }
