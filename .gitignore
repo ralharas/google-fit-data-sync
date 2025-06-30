@@ -1,0 +1,39 @@
+# Build and distribution
+dist/
+build/
+*.spec
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# OAuth tokens and credentials (keep these private!)
+token.json
+.google_fit_token.json
+client_secret.json
+
+# Environment files
+.env
+
+# CSV output files
+Steps/
+*.csv
+

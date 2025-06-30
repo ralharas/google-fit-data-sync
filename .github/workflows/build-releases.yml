@@ -1,0 +1,67 @@
+name: Build Cross-Platform Executables
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            name: windows
+            ext: .exe
+          - os: macos-latest
+            name: macos
+            ext: ""
+          - os: ubuntu-latest
+            name: linux
+            ext: ""
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Create dummy client_secret.json for build
+      run: |
+        cp client_secret.json.template client_secret.json
+    
+    - name: Build executable (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        pyinstaller --onefile --windowed --add-data "client_secret.json;." --name "GoogleFitSync" main.py
+    
+    - name: Build executable (macOS/Linux)
+      if: matrix.os != 'windows-latest'
+      run: |
+        pyinstaller --onefile --windowed --add-data "client_secret.json:." --name "GoogleFitSync" main.py
+    
+    - name: Upload executable
+      uses: actions/upload-artifact@v3
+      with:
+        name: GoogleFitSync-${{ matrix.name }}
+        path: dist/GoogleFitSync${{ matrix.ext }}
+    
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/GoogleFitSync${{ matrix.ext }}
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
