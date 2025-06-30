@@ -34,12 +34,23 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
 
-    - name: Create dummy client_secret.json for build
+    - name: Create dummy client_secret.json for build (Windows)
+      if: matrix.os == 'windows-latest'
+      run: copy client_secret.json.template client_secret.json
+    
+    - name: Create dummy client_secret.json for build (Unix)
+      if: matrix.os != 'windows-latest'
       run: cp client_secret.json.template client_secret.json
 
-    - name: Build executable
+    - name: Build executable (Windows)
+      if: matrix.os == 'windows-latest'
       run: |
-        pyinstaller --onefile --windowed --add-data "client_secret.json;." --name "GoogleFitSync" main.py
+        pyinstaller --onefile --windowed --add-data="client_secret.json;." --name="GoogleFitSync" main.py
+    
+    - name: Build executable (macOS/Linux)
+      if: matrix.os != 'windows-latest'
+      run: |
+        pyinstaller --onefile --windowed --add-data="client_secret.json:." --name="GoogleFitSync" main.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
