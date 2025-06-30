@@ -5,7 +5,11 @@ A cross-platform application to sync and export your Google Fit step count data 
 ## Features
 
 - 🏃‍♂️ Sync Google Fit step count data
-- 😴 Sync Google Fit sleep data
+- 😴 Sync Google Fit sleep data  
+- ❤️ Sync heart rate data
+- ⚖️ Sync weight data
+- 🔥 Sync calories burned data
+- 📏 Sync distance traveled data
 - 📊 Export to CSV format
 - 🔄 Historical data import (from 2022)
 - ⏰ Daily automatic sync
@@ -31,10 +35,14 @@ A cross-platform application to sync and export your Google Fit step count data 
 2. Click "Authorize with Google" when prompted
 3. Click "Start Full Import + Daily Auto" to begin syncing
 4. Data will be saved to:
-   - `Steps/Raw/steps_data_full.csv` - Complete historical step data
-   - `Steps/Raw/steps_data_daily.csv` - Daily step updates
-   - `Sleep/Raw/sleep_data_full.csv` - Complete historical sleep data
-   - `Sleep/Raw/sleep_data_daily.csv` - Daily sleep updates
+   - `Steps/Raw/` - Step count data
+   - `Sleep/Raw/` - Sleep tracking data
+   - `HeartRate/Raw/` - Heart rate measurements
+   - `Weight/Raw/` - Weight measurements
+   - `Calories/Raw/` - Calories burned data
+   - `Distance/Raw/` - Distance traveled data
+   
+   Each folder contains both `*_full.csv` (historical) and `*_daily.csv` (daily updates)
 
 ## Development
 

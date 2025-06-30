@@ -37,5 +37,9 @@ oauth_config.json
 # CSV output files
 Steps/
 Sleep/
+HeartRate/
+Weight/
+Calories/
+Distance/
 *.csv
 
