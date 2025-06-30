@@ -141,7 +141,7 @@ def run_sync(historical=False):
             messagebox.showinfo("Success", f"ALL steps data saved to:\n{output_file}")
         else:
             result_label.config(text=f"✅ Daily sync done!")
-            print(f"✅ Daily sync saved to:\n{output_file}")
+            # Note: GUI-only mode, no console output
 
     except Exception as e:
         result_label.config(text=f"❌ Error: {e}")
