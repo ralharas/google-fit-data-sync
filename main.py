@@ -12,13 +12,20 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-SCOPES = [
-    'https://www.googleapis.com/auth/fitness.activity.read',
-    'https://www.googleapis.com/auth/fitness.sleep.read',
-    'https://www.googleapis.com/auth/fitness.heart_rate.read',
-    'https://www.googleapis.com/auth/fitness.body.read',
-    'https://www.googleapis.com/auth/fitness.location.read'
-]
+SCOPES = ['https://www.googleapis.com/auth/fitness.activity.read']
+
+# Additional scopes for future use (commented out for simplicity)
+# SCOPES = [
+#     'https://www.googleapis.com/auth/fitness.activity.read',
+#     'https://www.googleapis.com/auth/fitness.body.read',
+#     'https://www.googleapis.com/auth/fitness.location.read',
+#     'https://www.googleapis.com/auth/fitness.nutrition.read',
+#     'https://www.googleapis.com/auth/fitness.blood_pressure.read',
+#     'https://www.googleapis.com/auth/fitness.blood_glucose.read',
+#     'https://www.googleapis.com/auth/fitness.oxygen_saturation.read',
+#     'https://www.googleapis.com/auth/fitness.body_temperature.read',
+#     'https://www.googleapis.com/auth/fitness.reproductive_health.read'
+# ]
 
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
@@ -142,76 +149,12 @@ def run_sync(historical=False):
 
         pd.DataFrame(all_rows).to_csv(output_file, index=False)
         
-        # Now collect sleep data
-        sleep_rows = []
-        current = start_date
-        
-        while current < end_date:
-            next_month = current + datetime.timedelta(days=30)
-            start_time = int(current.timestamp() * 1000)
-            end_time = int(min(next_month, end_date).timestamp() * 1000)
-            
-            # Sleep data request
-            sleep_body = {
-                "aggregateBy": [{
-                    "dataTypeName": "com.google.sleep.segment"
-                }],
-                "bucketByTime": {"durationMillis": 86400000},
-                "startTimeMillis": start_time,
-                "endTimeMillis": end_time
-            }
-            
-            try:
-                sleep_response = fitness_service.users().dataset().aggregate(userId='me', body=sleep_body).execute()
-                
-                for bucket in sleep_response['bucket']:
-                    for dataset in bucket['dataset']:
-                        for point in dataset['point']:
-                            start_sleep = datetime.datetime.fromtimestamp(int(point['startTimeNanos']) / 1e9)
-                            end_sleep = datetime.datetime.fromtimestamp(int(point['endTimeNanos']) / 1e9)
-                            sleep_type = point['value'][0]['intVal'] if point['value'] else 0
-                            duration_minutes = (end_sleep - start_sleep).total_seconds() / 60
-                            sleep_rows.append({
-                                'start': start_sleep, 
-                                'end': end_sleep, 
-                                'sleep_type': sleep_type,
-                                'duration_minutes': duration_minutes
-                            })
-            except Exception as sleep_error:
-                # Sleep data might not be available or permission denied
-                pass
-                
-            current = next_month
-        
-        # Save sleep data
-        sleep_output_dir = os.path.join(project_root, "Sleep", "Raw")
-        os.makedirs(sleep_output_dir, exist_ok=True)
-        
-        if historical:
-            sleep_output_file = os.path.join(sleep_output_dir, 'sleep_data_full.csv')
-        else:
-            sleep_output_file = os.path.join(sleep_output_dir, 'sleep_data_daily.csv')
-        
-        if sleep_rows:
-            pd.DataFrame(sleep_rows).to_csv(sleep_output_file, index=False)
-        
-        # Collect additional health data
-        health_data = collect_all_health_data(fitness_service, start_date, end_date, project_root, historical)
+        # Additional health data collection (commented out for simplicity)
+        # health_data = collect_all_health_data(fitness_service, start_date, end_date, project_root, historical)
         
         if historical:
             result_label.config(text=f"✅ Full history saved!")
-            message = f"Steps: {output_file}\n"
-            if sleep_rows:
-                message += f"Sleep: {sleep_output_file}\n"
-            else:
-                message += "Sleep: No data found\n"
-            
-            for data_type, file_path in health_data.items():
-                if file_path:
-                    message += f"{data_type.title()}: {file_path}\n"
-                else:
-                    message += f"{data_type.title()}: No data found\n"
-            
+            message = f"Steps data saved to: {output_file}"
             messagebox.showinfo("Success", message)
         else:
             result_label.config(text=f"✅ Daily sync done!")
@@ -225,8 +168,16 @@ def collect_all_health_data(fitness_service, start_date, end_date, project_root,
     """Collect heart rate, weight, calories, and distance data"""
     health_data = {}
     
-    # Data source configurations
+    # Data source configurations for comprehensive health data
     data_sources = {
+        'calories': {
+            'dataTypeName': 'com.google.calories.expended',
+            'folder': 'Calories'
+        },
+        'distance': {
+            'dataTypeName': 'com.google.distance.delta',
+            'folder': 'Distance'
+        },
         'heart_rate': {
             'dataTypeName': 'com.google.heart_rate.bpm',
             'folder': 'HeartRate'
@@ -235,13 +186,29 @@ def collect_all_health_data(fitness_service, start_date, end_date, project_root,
             'dataTypeName': 'com.google.weight',
             'folder': 'Weight'
         },
-        'calories': {
-            'dataTypeName': 'com.google.calories.expended',
-            'folder': 'Calories'
+        'height': {
+            'dataTypeName': 'com.google.height',
+            'folder': 'Height'
         },
-        'distance': {
-            'dataTypeName': 'com.google.distance.delta',
-            'folder': 'Distance'
+        'body_fat': {
+            'dataTypeName': 'com.google.body.fat.percentage',
+            'folder': 'BodyFat'
+        },
+        'blood_pressure': {
+            'dataTypeName': 'com.google.blood_pressure',
+            'folder': 'BloodPressure'
+        },
+        'blood_glucose': {
+            'dataTypeName': 'com.google.blood_glucose',
+            'folder': 'BloodGlucose'
+        },
+        'oxygen_saturation': {
+            'dataTypeName': 'com.google.oxygen_saturation',
+            'folder': 'OxygenSaturation'
+        },
+        'body_temperature': {
+            'dataTypeName': 'com.google.body.temperature',
+            'folder': 'BodyTemperature'
         }
     }
     
@@ -328,7 +295,7 @@ if __name__ == '__main__':
     root.geometry("450x250")
 
     Label(root, text="Connect & Sync ALL Google Fit Data", font=("Helvetica", 14)).pack(pady=20)
-    Label(root, text="Collects: Steps, Sleep, Heart Rate, Weight, Calories, Distance", font=("Helvetica", 10), fg="gray").pack()
+    Label(root, text="Collects: Steps Data Only", font=("Helvetica", 10), fg="gray").pack()
     Button(root, text="Start Full Import + Daily Auto", command=start_sync, height=2, width=30).pack(pady=10)
     result_label = Label(root, text="", font=("Helvetica", 12))
     result_label.pack(pady=20)
