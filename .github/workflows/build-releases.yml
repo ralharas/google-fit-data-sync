@@ -15,13 +15,16 @@ jobs:
         include:
           - os: windows-latest
             ext: .exe
+            name: windows
           - os: macos-latest
             ext: ""
+            name: macos
           - os: ubuntu-latest
             ext: ""
+            name: linux
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -52,21 +55,59 @@ jobs:
       run: |
         pyinstaller --onefile --windowed --add-data="client_secret.json:." --name="GoogleFitSync" main.py
 
+    - name: Rename executable for release
+      run: |
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          mv dist/GoogleFitSync.exe dist/GoogleFitSync-${{ matrix.name }}.exe
+        else
+          mv dist/GoogleFitSync dist/GoogleFitSync-${{ matrix.name }}
+        fi
+      shell: bash
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: GoogleFitSync-${{ matrix.os }}
-        path: dist/GoogleFitSync${{ matrix.ext }}
+        name: GoogleFitSync-${{ matrix.name }}
+        path: dist/GoogleFitSync-${{ matrix.name }}${{ matrix.ext }}
 
-    - name: Create release
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: actions/create-release@v1
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        merge-multiple: true
+        path: ./release-files
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./release-files/GoogleFitSync-windows.exe
+          ./release-files/GoogleFitSync-macos
+          ./release-files/GoogleFitSync-linux
+        name: Release ${{ github.ref_name }}
+        body: |
+          ## Google Fit Data Sync - ${{ github.ref_name }}
+          
+          Cross-platform executables for syncing Google Fit data.
+          
+          ### Downloads:
+          - **Windows**: GoogleFitSync-windows.exe
+          - **macOS**: GoogleFitSync-macos
+          - **Linux**: GoogleFitSync-linux
+          
+          ### Setup:
+          1. Download the appropriate executable for your platform
+          2. Copy `client_secret.json.template` to `client_secret.json`
+          3. Add your Google API credentials to `client_secret.json`
+          4. Run the executable
         draft: false
         prerelease: false
-        files: dist/GoogleFitSync${{ matrix.ext }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
