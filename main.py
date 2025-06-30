@@ -68,7 +68,15 @@ def run_sync(historical=False):
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
-                creds = flow.run_local_server(port=8080)
+                # Try multiple ports to avoid conflicts
+                for port in [8080, 8081, 8082, 8083, 0]:  # 0 = any available port
+                    try:
+                        creds = flow.run_local_server(port=port)
+                        break
+                    except OSError as e:
+                        if port == 0:  # Last attempt with any port
+                            raise e
+                        continue
             with open(token_file, 'w') as token:
                 token.write(creds.to_json())
 
