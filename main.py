@@ -28,12 +28,12 @@ def run_sync(historical=False):
         # Embedded OAuth configuration - no external files needed
         client_config = {
             "installed": {
-                "client_id": "340362959053-mpj1ck0j6oj568reff7rdo7fd8in46d4.apps.googleusercontent.com",
+                "client_id": os.getenv("GOOGLE_CLIENT_ID", "340362959053-mpj1ck0j6oj568reff7rdo7fd8in46d4.apps.googleusercontent.com"),
                 "project_id": "dataautomation-464320", 
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                "client_secret": "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",
+                "client_secret": os.getenv("GOOGLE_CLIENT_SECRET", "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"),
                 "redirect_uris": ["http://localhost"]
             }
         }

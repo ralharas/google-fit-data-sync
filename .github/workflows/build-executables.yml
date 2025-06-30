@@ -39,6 +39,9 @@ jobs:
         pip install pyinstaller
     
     - name: Build executable
+      env:
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       run: ${{ matrix.build_command }}
     
     - name: Upload executable
