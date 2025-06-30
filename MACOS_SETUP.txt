@@ -1,0 +1,16 @@
+FOR MAC USERS - IMPORTANT!
+
+When you try to open GoogleFitSync, you'll see a security warning.
+
+HERE'S HOW TO FIX IT (30 seconds):
+
+1. Right-click on "GoogleFitSync" 
+2. Choose "Open" from the menu
+3. Click "Open" when asked "Are you sure?"
+
+That's it! The app will work normally after this one-time step.
+
+WHY THIS HAPPENS:
+Mac blocks apps that aren't from the App Store or signed developers.
+This is normal and the app is completely safe.
+

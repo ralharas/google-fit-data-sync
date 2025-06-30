@@ -1,0 +1,25 @@
+FOR WINDOWS USERS - IMPORTANT!
+
+You might see a security warning when downloading or running GoogleFitSync.exe.
+
+POSSIBLE WARNINGS & HOW TO FIX:
+
+1. BROWSER DOWNLOAD WARNING:
+   - Click "Keep" or "Download anyway"
+   - This is normal for new/unsigned apps
+
+2. WINDOWS DEFENDER SMARTSCREEN:
+   - If you see "Windows protected your PC"
+   - Click "More info"
+   - Click "Run anyway"
+
+3. ANTIVIRUS WARNING:
+   - If your antivirus blocks the file
+   - Add GoogleFitSync.exe to your antivirus "exceptions" or "whitelist"
+
+That's it! The app will work normally after this one-time step.
+
+WHY THIS HAPPENS:
+Windows blocks apps that aren't digitally signed by recognized publishers.
+This is normal and the app is completely safe.
+
