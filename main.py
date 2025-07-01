@@ -133,8 +133,8 @@ def run_sync(historical=False):
 
         # Save output to project root directory
         if getattr(sys, 'frozen', False):
-            # When running as packaged app, save to a fixed project location
-            project_root = "/Users/rawad/documents/projects/dataAutomationProject"
+            # When running as packaged app, save to same directory as executable
+            project_root = os.path.dirname(sys.executable)
         else:
             # When running in development, use the script's directory
             project_root = os.path.dirname(os.path.abspath(__file__))
