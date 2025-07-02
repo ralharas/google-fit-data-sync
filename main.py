@@ -760,8 +760,8 @@ if __name__ == '__main__':
                          text="🚀 Start Import + Daily Auto", 
                          command=start_sync, 
                          font=("Helvetica", 12, "bold"),
-                         bg='#3498db', fg='white',
-                         activebackground='#2980b9',
+                         bg='#3498db', fg='black',
+                         activebackground='#2980b9', activeforeground='white',
                          height=2, width=35,
                          relief='flat')
     start_button.pack(pady=(0, 10))
