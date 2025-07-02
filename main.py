@@ -251,8 +251,9 @@ def collect_all_health_data(fitness_service, start_date, end_date, project_root,
                 }
                 
                 try:
-                    # Rate limiting: Wait between requests to avoid quota errors
-                    sleep(2)  # 2 second delay between API calls
+                    # Shorter delay - 1 second should be enough
+                    sleep(1)  # 1 second delay between API calls
+                    result_label.config(text=f"Collecting {data_type} data... ({i+1}/{len(data_sources)}) - {current.strftime('%Y-%m')}")
                     response = fitness_service.users().dataset().aggregate(userId='me', body=body).execute()
                     
                     for bucket in response['bucket']:
@@ -302,12 +303,18 @@ def collect_all_health_data(fitness_service, start_date, end_date, project_root,
                 except Exception as e:
                     # Handle rate limiting and other errors
                     if "rateLimitExceeded" in str(e) or "429" in str(e):
-                        result_label.config(text=f"Rate limit hit for {data_type}, waiting 60 seconds...")
-                        sleep(60)  # Wait 1 minute for rate limit reset
+                        result_label.config(text=f"Rate limit hit for {data_type}, waiting 30 seconds...")
+                        sleep(30)  # Shorter wait - 30 seconds instead of 60
                         continue  # Retry the same request
+                    elif "Invalid scope" in str(e) or "forbidden" in str(e).lower():
+                        result_label.config(text=f"Skipping {data_type} (not available)")
+                        sleep(0.5)
+                        break  # Skip this data type entirely
                     else:
                         # Other errors - data might not be available
-                        pass
+                        result_label.config(text=f"No {data_type} data found")
+                        sleep(0.5)
+                        break  # Skip this data type
                     
                 current = next_month
             
@@ -323,8 +330,12 @@ def collect_all_health_data(fitness_service, start_date, end_date, project_root,
                 
                 pd.DataFrame(rows).to_csv(output_file, index=False)
                 health_data[data_type] = output_file
+                result_label.config(text=f"✅ {data_type} saved ({len(rows)} records)")
+                sleep(0.5)  # Brief pause to show success
             else:
                 health_data[data_type] = None
+                result_label.config(text=f"⚠️ No {data_type} data found")
+                sleep(0.5)
                 
         except Exception:
             health_data[data_type] = None
