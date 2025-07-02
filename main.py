@@ -14,13 +14,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-# Valid Google Fit API scopes
-SCOPES = [
-    'https://www.googleapis.com/auth/fitness.activity.read',
-    'https://www.googleapis.com/auth/fitness.body.read',
-    'https://www.googleapis.com/auth/fitness.location.read',
-    'https://www.googleapis.com/auth/fitness.nutrition.read'
-]
+SCOPES = ['https://www.googleapis.com/auth/fitness.activity.read']
 
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
