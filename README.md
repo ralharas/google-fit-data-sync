@@ -36,11 +36,39 @@ A cross-platform desktop application to sync all your Google Fit data with local
 - **Google Cloud Project** with Fitness API enabled
 - **OAuth 2.0 credentials**
 
-## 🚀 Quick Setup
+## Quick Setup
 
-### 1. Clone the Repository
+### Option 1: Download Pre-built Executable (Recommended)
+
+1. Go to [GitHub Actions](https://github.com/ralharas/google-fit-data-sync/actions)
+2. Click on the latest successful workflow run
+3. Download the artifact for your platform:
+   - `GoogleFitSync-windows-latest` (Windows .exe)
+   - `GoogleFitSync-macos-latest` (Mac executable)
+   - `GoogleFitSync-ubuntu-latest` (Linux executable)
+
+#### macOS Security Fix
+After downloading the Mac executable, you may see a security warning. To fix this:
+
 ```bash
-git clone https://github.com/your-username/dataAutomationProject.git
+# Download the fix script
+curl -O https://raw.githubusercontent.com/ralharas/google-fit-data-sync/main/fix_mac_security.sh
+chmod +x fix_mac_security.sh
+
+# Run the fix (in the same folder as GoogleFitSync)
+./fix_mac_security.sh
+```
+
+Or manually:
+1. Right-click the executable → "Open"
+2. Click "Open" in the security dialog
+3. Or go to System Preferences → Security & Privacy → General and click "Open Anyway"
+
+### Option 2: Build from Source
+
+#### 1. Clone the Repository
+```bash
+git clone https://github.com/ralharas/google-fit-data-sync.git
 cd dataAutomationProject
 ```
 

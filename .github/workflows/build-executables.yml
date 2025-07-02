@@ -48,6 +48,13 @@ jobs:
         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       run: ${{ matrix.build_command }}
     
+    - name: Fix macOS permissions and signing
+      if: matrix.os == 'macos-latest'
+      run: |
+        chmod +x dist/GoogleFitSync
+        # Remove quarantine attribute to prevent Gatekeeper issues
+        xattr -d com.apple.quarantine dist/GoogleFitSync || true
+    
     - name: Upload executable
       uses: actions/upload-artifact@v4
       with:
