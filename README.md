@@ -51,11 +51,12 @@ A cross-platform desktop application to sync all your Google Fit data with local
 After downloading the Mac executable, you may see a security warning. To fix this:
 
 ```bash
-# Download the fix script
+# Remove quarantine attribute (recommended)
+xattr -d com.apple.quarantine GoogleFitSync-Mac.app
+
+# Or download the fix script
 curl -O https://raw.githubusercontent.com/ralharas/google-fit-data-sync/main/fix_mac_security.sh
 chmod +x fix_mac_security.sh
-
-# Run the fix (in the same folder as GoogleFitSync)
 ./fix_mac_security.sh
 ```
 
