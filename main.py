@@ -533,7 +533,7 @@ def collect_selected_health_data(fitness_service, start_date, end_date, project_
     """Collect only selected health data types"""
     health_data = {}
     
-    # All available data source configurations
+    # All data source configurations for comprehensive health data
     all_data_sources = {
         'calories': {'dataTypeName': 'com.google.calories.expended', 'folder': 'Calories'},
         'distance': {'dataTypeName': 'com.google.distance.delta', 'folder': 'Distance'},
@@ -590,7 +590,7 @@ def collect_filtered_health_data(fitness_service, start_date, end_date, project_
                                 start_dt = datetime.datetime.fromtimestamp(int(point['startTimeNanos']) / 1e9)
                                 end_dt = datetime.datetime.fromtimestamp(int(point['endTimeNanos']) / 1e9)
                                 
-                                # Data type specific parsing (same as before)
+                                # Data type specific parsing for confirmed working data types
                                 if data_type == 'heart_rate':
                                     value = point['value'][0]['fpVal'] if point['value'] else 0
                                     rows.append({'start': start_dt, 'end': end_dt, 'heart_rate_bpm': value})
@@ -603,7 +603,15 @@ def collect_filtered_health_data(fitness_service, start_date, end_date, project_
                                 elif data_type == 'distance':
                                     value = point['value'][0]['fpVal'] if point['value'] else 0
                                     rows.append({'start': start_dt, 'end': end_dt, 'distance_meters': value})
-                                # Add other data types as needed...
+                                elif data_type == 'height':
+                                    value = point['value'][0]['fpVal'] if point['value'] else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'height_meters': value})
+                                elif data_type == 'body_fat':
+                                    value = point['value'][0]['fpVal'] if point['value'] else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'body_fat_percentage': value})
+                                elif data_type == 'sleep':
+                                    value = point['value'][0]['intVal'] if point['value'] else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'sleep_type': value})
                                 
                 except Exception as e:
                     if "rateLimitExceeded" in str(e) or "429" in str(e):
