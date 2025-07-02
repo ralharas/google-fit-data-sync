@@ -131,10 +131,16 @@ def run_sync(historical=False):
 
             current = next_month
 
-        # Save output to project root directory
+        # Save output to user-accessible directory
         if getattr(sys, 'frozen', False):
-            # When running as packaged app, save to same directory as executable
-            project_root = os.path.dirname(sys.executable)
+            # When running as packaged app
+            if sys.platform == 'darwin' and sys.executable.endswith('.app/Contents/MacOS/GoogleFitSync'):
+                # On Mac, save next to the .app bundle, not inside it
+                app_path = sys.executable.replace('/Contents/MacOS/GoogleFitSync', '')
+                project_root = os.path.dirname(app_path)
+            else:
+                # On Windows/Linux, save next to executable
+                project_root = os.path.dirname(sys.executable)
         else:
             # When running in development, use the script's directory
             project_root = os.path.dirname(os.path.abspath(__file__))
