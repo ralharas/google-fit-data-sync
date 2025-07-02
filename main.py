@@ -14,17 +14,12 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-# Comprehensive Google Fit API scopes for all data types
+# Valid Google Fit API scopes
 SCOPES = [
     'https://www.googleapis.com/auth/fitness.activity.read',
     'https://www.googleapis.com/auth/fitness.body.read',
     'https://www.googleapis.com/auth/fitness.location.read',
-    'https://www.googleapis.com/auth/fitness.nutrition.read',
-    'https://www.googleapis.com/auth/fitness.blood_pressure.read',
-    'https://www.googleapis.com/auth/fitness.blood_glucose.read',
-    'https://www.googleapis.com/auth/fitness.oxygen_saturation.read',
-    'https://www.googleapis.com/auth/fitness.body_temperature.read',
-    'https://www.googleapis.com/auth/fitness.reproductive_health.read'
+    'https://www.googleapis.com/auth/fitness.nutrition.read'
 ]
 
 def resource_path(relative_path):
@@ -35,6 +30,15 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+
+def get_executable_dir():
+    """Get directory where executable is located (for data storage)"""
+    if getattr(sys, 'frozen', False):
+        # When running as packaged app, use executable directory
+        return os.path.dirname(os.path.abspath(sys.executable))
+    else:
+        # When running in development, use script directory
+        return os.path.dirname(os.path.abspath(__file__))
 
 def run_sync(historical=False):
     try:
@@ -131,13 +135,8 @@ def run_sync(historical=False):
 
             current = next_month
 
-        # Save output to project root directory
-        if getattr(sys, 'frozen', False):
-            # When running as packaged app, save to same directory as executable
-            project_root = os.path.dirname(sys.executable)
-        else:
-            # When running in development, use the script's directory
-            project_root = os.path.dirname(os.path.abspath(__file__))
+        # Save output to executable directory
+        project_root = get_executable_dir()
         
         output_dir = os.path.join(project_root, "Steps", "Raw")
         os.makedirs(output_dir, exist_ok=True)
@@ -344,11 +343,8 @@ def run_comprehensive_sync(selected_data_types, historical=False):
 
         end_date = datetime.datetime.utcnow()
         
-        # Get project root directory
-        if getattr(sys, 'frozen', False):
-            project_root = os.path.dirname(sys.executable)
-        else:
-            project_root = os.path.dirname(os.path.abspath(__file__))
+        # Get project root directory (where executable is located)
+        project_root = get_executable_dir()
         
         collected_data = {}
         
@@ -432,7 +428,7 @@ def collect_steps_data(fitness_service, start_date, end_date, project_root, hist
 
         current = next_month
 
-    # Save output
+    # Save output to executable directory
     output_dir = os.path.join(project_root, "Steps", "Raw")
     os.makedirs(output_dir, exist_ok=True)
 
@@ -441,7 +437,14 @@ def collect_steps_data(fitness_service, start_date, end_date, project_root, hist
     else:
         output_file = os.path.join(output_dir, 'steps_data_daily.csv')
 
-    pd.DataFrame(all_rows).to_csv(output_file, index=False)
+    # Create DataFrame with proper date formatting
+    df = pd.DataFrame(all_rows)
+    if not df.empty:
+        # Format dates nicely
+        df['date'] = pd.to_datetime(df['start']).dt.date
+        df = df.groupby('date')['steps'].sum().reset_index()
+        df.to_csv(output_file, index=False)
+    
     return output_file
 
 def start_sync():
@@ -637,10 +640,9 @@ if __name__ == '__main__':
                       bg='#f0f0f0', fg='#2c3e50')
     data_label.pack(pady=(0, 15))
     
-    # Checkbox for each data type
+    # Checkbox for each data type (matching available scopes)
     checkbox_vars = {}
-    data_types = ['Steps', 'Calories', 'Distance', 'Heart Rate', 'Weight', 'Height', 'Body Fat',
-                 'Blood Pressure', 'Blood Glucose', 'Oxygen Saturation', 'Body Temperature']
+    data_types = ['Steps', 'Calories', 'Distance', 'Heart Rate', 'Weight', 'Height']
     
     # Select All Checkbox
     def select_all():
