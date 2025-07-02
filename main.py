@@ -496,8 +496,8 @@ if __name__ == '__main__':
     root.title("Google Fit Data Sync")
     
     # Cross-platform window sizing and positioning
-    window_width = 650
-    window_height = 550
+    window_width = 600
+    window_height = 650
     
     # Center window on screen
     screen_width = root.winfo_screenwidth()
@@ -508,19 +508,10 @@ if __name__ == '__main__':
     root.geometry(f"{window_width}x{window_height}+{x}+{y}")
     root.configure(bg='#f0f0f0')
     root.resizable(True, True)
-    root.minsize(500, 400)
-    
-    # Set appropriate icon and taskbar behavior
-    try:
-        # Try to set window icon if available
-        if platform.system() == "Windows":
-            root.iconbitmap(default='icon.ico')  # Optional: add icon file
-    except:
-        pass
+    root.minsize(500, 500)
     
     # Get system-appropriate fonts
     system_font = get_system_font()
-    emoji_font = get_emoji_font()
     
     # Header
     header_frame = Frame(root, bg='#2c3e50', height=70)
@@ -542,12 +533,109 @@ if __name__ == '__main__':
     main_frame = Frame(root, bg='#f0f0f0')
     main_frame.pack(fill='both', expand=True, padx=20, pady=20)
     
-    # Instructions
-    instruction_label = Label(main_frame, 
-                             text="Select the data types you want to import from Google Fit:", 
-                             font=(system_font, 12), 
-                             bg='#f0f0f0', fg='#2c3e50')
-    instruction_label.pack(pady=(0, 15))
+    # Step 1: Authentication Section
+    auth_frame = Frame(main_frame, bg='#f0f0f0')
+    auth_frame.pack(fill='x', pady=(0, 20))
+    
+    auth_label = Label(auth_frame, 
+                      text="Step 1: Connect to Google Fit", 
+                      font=(system_font, 14, "bold"), 
+                      bg='#f0f0f0', fg='#2c3e50')
+    auth_label.pack(pady=(0, 10))
+    
+    def do_auth():
+        """Perform actual Google OAuth authentication"""
+        try:
+            auth_status.config(text="Connecting...", fg='#f39c12')
+            auth_button.config(state='disabled')
+            
+            # OAuth configuration
+            client_id = os.getenv("GOOGLE_CLIENT_ID")
+            client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+            
+            if not client_id or not client_secret:
+                config_file = resource_path("oauth_config.json")
+                if os.path.exists(config_file):
+                    import json
+                    with open(config_file, 'r') as f:
+                        config = json.load(f)
+                    client_id = config.get("client_id")
+                    client_secret = config.get("client_secret")
+            
+            if not client_id or not client_secret:
+                raise Exception("OAuth credentials not found. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables or provide oauth_config.json file.")
+            
+            client_config = {
+                "installed": {
+                    "client_id": client_id,
+                    "project_id": "dataautomation-464320",
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                    "client_secret": client_secret,
+                    "redirect_uris": ["http://localhost"]
+                }
+            }
+            
+            home_dir = os.path.expanduser("~")
+            token_file = os.path.join(home_dir, '.google_fit_token.json')
+            
+            creds = None
+            if os.path.exists(token_file):
+                creds = Credentials.from_authorized_user_file(token_file, SCOPES)
+            
+            if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                    creds.refresh(Request())
+                else:
+                    flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
+                    for port in [8080, 8081, 8082, 8083, 0]:
+                        try:
+                            creds = flow.run_local_server(port=port)
+                            break
+                        except OSError as e:
+                            if port == 0:
+                                raise e
+                            continue
+                with open(token_file, 'w') as token:
+                    token.write(creds.to_json())
+            
+            # Test the connection
+            fitness_service = build('fitness', 'v1', credentials=creds)
+            
+            # Success!
+            auth_status.config(text="✅ Connected to Google Fit!" if platform.system() != "Windows" else "Connected to Google Fit!", fg='#27ae60')
+            auth_button.config(text="✅ Connected" if platform.system() != "Windows" else "Connected", state='normal', bg='#27ae60')
+            data_frame.pack(fill='both', expand=True, pady=(20, 0))
+            
+        except Exception as e:
+            auth_status.config(text=f"Error: {str(e)[:50]}...", fg='#e74c3c')
+            auth_button.config(state='normal')
+            messagebox.showerror("Authentication Error", f"Failed to connect to Google Fit:\n{e}")
+    
+    auth_button = Button(auth_frame, 
+                        text="🔐 Authorize with Google" if platform.system() != "Windows" else "Authorize with Google", 
+                        command=lambda: threading.Thread(target=do_auth).start(),
+                        font=(system_font, 11, "bold"),
+                        bg='#27ae60', fg='white',
+                        activebackground='#229954',
+                        cursor='hand2',
+                        padx=20, pady=8)
+    auth_button.pack()
+    
+    auth_status = Label(auth_frame, text="Not connected", 
+                       font=(system_font, 10), 
+                       bg='#f0f0f0', fg='#e74c3c')
+    auth_status.pack(pady=(5, 0))
+    
+    # Step 2: Data Selection Section (Initially Hidden)
+    data_frame = Frame(main_frame, bg='#f0f0f0')
+    
+    data_label = Label(data_frame, 
+                      text="Step 2: Select Data Types to Import", 
+                      font=(system_font, 14, "bold"), 
+                      bg='#f0f0f0', fg='#2c3e50')
+    data_label.pack(pady=(0, 15))
     
     # Checkbox for each data type
     checkbox_vars = {}
@@ -559,8 +647,8 @@ if __name__ == '__main__':
         for var in checkbox_vars.values():
             var.set(select_all_var.get())
     
-    select_all_var = IntVar()
-    select_all_frame = Frame(main_frame, bg='#f0f0f0')
+    select_all_var = IntVar(value=1)  # Default to selected
+    select_all_frame = Frame(data_frame, bg='#f0f0f0')
     select_all_frame.pack(fill='x', pady=(0, 10))
     
     # Cross-platform checkbox text
@@ -579,11 +667,11 @@ if __name__ == '__main__':
                                      selectcolor='#3498db')
     select_all_checkbox.pack(anchor='w')
     
-    # Scrollable frame for checkboxes with cross-platform scrolling
-    checkbox_container = Frame(main_frame, bg='#f0f0f0')
+    # Scrollable frame for checkboxes
+    checkbox_container = Frame(data_frame, bg='#f0f0f0')
     checkbox_container.pack(fill='both', expand=True, pady=(0, 10))
     
-    canvas = Canvas(checkbox_container, bg='#f0f0f0', height=200, highlightthickness=0)
+    canvas = Canvas(checkbox_container, bg='#f0f0f0', height=180, highlightthickness=0)
     scrollbar = Scrollbar(checkbox_container, orient=VERTICAL, command=canvas.yview)
     scrollable_frame = Frame(canvas, bg='#f0f0f0')
     
@@ -595,34 +683,13 @@ if __name__ == '__main__':
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     canvas.configure(yscrollcommand=scrollbar.set)
     
-    # Bind mouse wheel scrolling for cross-platform compatibility
-    def _on_mousewheel(event):
-        if platform.system() == "Windows":
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        else:  # macOS and Linux
-            canvas.yview_scroll(int(-1*event.delta), "units")
-    
-    def _bind_to_mousewheel(event):
-        canvas.bind_all("<MouseWheel>", _on_mousewheel)  # Windows
-        canvas.bind_all("<Button-4>", lambda e: canvas.yview_scroll(-1, "units"))  # Linux
-        canvas.bind_all("<Button-5>", lambda e: canvas.yview_scroll(1, "units"))   # Linux
-    
-    def _unbind_from_mousewheel(event):
-        canvas.unbind_all("<MouseWheel>")
-        canvas.unbind_all("<Button-4>")
-        canvas.unbind_all("<Button-5>")
-    
-    canvas.bind('<Enter>', _bind_to_mousewheel)
-    canvas.bind('<Leave>', _unbind_from_mousewheel)
-    
     # Create checkboxes in a grid layout
     for i, data_type in enumerate(data_types):
-        var = IntVar()
+        var = IntVar(value=1)  # Default to selected
         checkbox_vars[data_type] = var
         
         # Cross-platform emoji and icon handling
         if platform.system() == "Windows":
-            # Use text symbols for better Windows compatibility
             icon_map = {
                 'Steps': '[S]', 'Calories': '[C]', 'Distance': '[D]', 'Heart Rate': '[H]',
                 'Weight': '[W]', 'Height': '[Ht]', 'Body Fat': '[BF]', 'Blood Pressure': '[BP]',
@@ -630,7 +697,6 @@ if __name__ == '__main__':
             }
             checkbox_text = f"{icon_map.get(data_type, '[*]')} {data_type}"
         else:
-            # Use emojis for macOS and Linux
             emoji_map = {
                 'Steps': '👟', 'Calories': '🔥', 'Distance': '📏', 'Heart Rate': '❤️',
                 'Weight': '⚖️', 'Height': '📐', 'Body Fat': '💪', 'Blood Pressure': '🩸',
@@ -645,8 +711,7 @@ if __name__ == '__main__':
                               bg='#f0f0f0', fg='#34495e',
                               activebackground='#e8f4fd',
                               selectcolor='#3498db',
-                              anchor='w',
-                              justify='left')
+                              anchor='w')
         checkbox.grid(row=i//2, column=i%2, sticky='ew', padx=15, pady=3)
         
         # Configure grid weights for responsive layout
@@ -657,15 +722,15 @@ if __name__ == '__main__':
     scrollbar.pack(side=RIGHT, fill=Y)
     
     # Button frame
-    button_frame = Frame(main_frame, bg='#f0f0f0')
+    button_frame = Frame(data_frame, bg='#f0f0f0')
     button_frame.pack(fill='x', pady=20)
     
     # Cross-platform button styling
     if platform.system() == "Windows":
-        button_text = "Start Import"
+        button_text = "Start Full Import + Daily Auto"
         button_style = {'relief': 'raised', 'bd': 2}
     else:
-        button_text = "🚀 Start Import"
+        button_text = "🚀 Start Full Import + Daily Auto"
         button_style = {'relief': 'flat', 'bd': 0}
     
     start_button = Button(button_frame, 
@@ -679,18 +744,8 @@ if __name__ == '__main__':
                          **button_style)
     start_button.pack()
     
-    # Add hover effects
-    def on_enter(e):
-        start_button.config(bg='#2980b9')
-    
-    def on_leave(e):
-        start_button.config(bg='#3498db')
-    
-    start_button.bind("<Enter>", on_enter)
-    start_button.bind("<Leave>", on_leave)
-    
-    # Result label with cross-platform styling
-    result_label = Label(main_frame, text="", 
+    # Result label
+    result_label = Label(data_frame, text="", 
                         font=(system_font, 11), 
                         bg='#f0f0f0', fg='#27ae60',
                         wraplength=550,
