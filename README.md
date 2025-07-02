@@ -1,91 +1,195 @@
-# Google Fit Data Sync
+# 🏃‍♂️ Google Fit Data Sync
 
-A cross-platform application to sync and export your Google Fit step count data to CSV files.
+A cross-platform desktop application to sync all your Google Fit data with local CSV files. Works seamlessly on **Windows**, **macOS**, and **Linux**.
 
-## Features
+## ✨ Features
 
-- 🏃‍♂️ Sync Google Fit step count data
-- 😴 Sync Google Fit sleep data  
-- ❤️ Sync heart rate data
-- ⚖️ Sync weight data
-- 🔥 Sync calories burned data
-- 📏 Sync distance traveled data
-- 📊 Export to CSV format
-- 🔄 Historical data import (from 2022)
-- ⏰ Daily automatic sync
-- 🖥️ Cross-platform support (Windows, macOS, Linux)
-- ✅ **No setup required** - OAuth credentials built-in!
+- **Comprehensive Data Import**: Steps, Calories, Distance, Heart Rate, Weight, Height, Body Fat, Blood Pressure, Blood Glucose, Oxygen Saturation, and Body Temperature
+- **Selective Import**: Choose which data types to import with checkboxes
+- **Cross-Platform GUI**: Native look and feel on Windows, macOS, and Linux
+- **Historical & Daily Sync**: Import full history or set up daily automatic syncing
+- **User-Friendly Interface**: Modern, intuitive design with visual feedback
 
-## Quick Start for Windows Users
+## 🔧 Cross-Platform Compatibility
 
-### Download and Run - That's It!
+### Windows
+- ✅ Text-based icons for maximum compatibility
+- ✅ Segoe UI font for native Windows look
+- ✅ Windows-optimized mouse wheel scrolling
+- ✅ Proper window positioning and sizing
 
-1. Go to the [Releases](../../releases) page
-2. Download `GoogleFitSync-Windows.zip`
-3. Extract the zip file
-4. Double-click `GoogleFitSync.exe`
-5. Sign in with your Google account when prompted
-6. Click "Start Full Import + Daily Auto"
+### macOS
+- ✅ Native emoji support
+- ✅ SF Pro Display system font
+- ✅ macOS-optimized UI elements
+- ✅ Retina display support
 
-**No technical setup needed!** OAuth credentials are embedded in the app.
+### Linux
+- ✅ Ubuntu/Noto font compatibility
+- ✅ Cross-platform emoji rendering
+- ✅ GTK-compatible styling
 
-### Usage
+## 📋 Requirements
 
-1. Double-click the executable file
-2. Click "Authorize with Google" when prompted
-3. Click "Start Full Import + Daily Auto" to begin syncing
-4. Data will be saved to:
-   - `Steps/Raw/` - Step count data
-   - `Sleep/Raw/` - Sleep tracking data
-   - `HeartRate/Raw/` - Heart rate measurements
-   - `Weight/Raw/` - Weight measurements
-   - `Calories/Raw/` - Calories burned data
-   - `Distance/Raw/` - Distance traveled data
-   
-   Each folder contains both `*_full.csv` (historical) and `*_daily.csv` (daily updates)
+- **Python 3.8+**
+- **Google Fit account** with data
+- **Google Cloud Project** with Fitness API enabled
+- **OAuth 2.0 credentials**
 
-## Development
+## 🚀 Quick Setup
 
-### Requirements
-
-- Python 3.11+
-- Google Fit API credentials
-
-### Installation
-
+### 1. Clone the Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/your-username/dataAutomationProject.git
 cd dataAutomationProject
-pip install -r requirements.txt
 ```
 
-### Running from Source
+### 2. Run Setup Script
+```bash
+python setup.py
+```
 
+This will:
+- Check Python version compatibility
+- Install all required dependencies
+- Create necessary data directories
+- Display platform-specific setup information
+
+### 3. Configure OAuth Credentials
+
+#### Option A: Environment Variables
+```bash
+# Windows (Command Prompt)
+set GOOGLE_CLIENT_ID=your_client_id_here
+set GOOGLE_CLIENT_SECRET=your_client_secret_here
+
+# Windows (PowerShell)
+$env:GOOGLE_CLIENT_ID="your_client_id_here"
+$env:GOOGLE_CLIENT_SECRET="your_client_secret_here"
+
+# macOS/Linux
+export GOOGLE_CLIENT_ID="your_client_id_here"
+export GOOGLE_CLIENT_SECRET="your_client_secret_here"
+```
+
+#### Option B: Configuration File
+Create `oauth_config.json`:
+```json
+{
+    "client_id": "your_client_id_here",
+    "client_secret": "your_client_secret_here"
+}
+```
+
+### 4. Run the Application
 ```bash
 python main.py
 ```
 
-### Building Executables
+## 🎯 Usage
 
-```bash
-pip install pyinstaller
-pyinstaller --onefile --windowed --add-data "client_secret.json:." --name "GoogleFitSync" main.py
+1. **Launch the App**: Run `python main.py`
+2. **Select Data Types**: Check the boxes for data you want to import
+3. **Quick Selection**: Use "Select All" to choose everything
+4. **Start Import**: Click the "Start Import" button
+5. **OAuth Authorization**: Complete Google authentication in your browser
+6. **Monitor Progress**: Watch real-time status updates
+
+## 📊 Data Output
+
+Data is saved as CSV files in organized folders:
+```
+dataAutomationProject/
+├── Steps/Raw/
+├── Calories/Raw/
+├── Distance/Raw/
+├── HeartRate/Raw/
+├── Weight/Raw/
+├── Height/Raw/
+├── BodyFat/Raw/
+├── BloodPressure/Raw/
+├── BloodGlucose/Raw/
+├── OxygenSaturation/Raw/
+└── BodyTemperature/Raw/
 ```
 
-## Data Format
+## 🔒 Security
 
-The exported CSV files contain:
-- `start`: Start timestamp of the data point
-- `end`: End timestamp of the data point  
-- `steps`: Number of steps recorded
+- OAuth tokens stored securely in user home directory
+- No credentials stored in plain text
+- Environment variable support for CI/CD
+- Local-only data processing
 
-## Troubleshooting
+## 🛠️ Development
 
-- **"client_secret.json not found"**: Make sure the credentials file is in the same directory as the executable
-- **OAuth errors**: Create a new OAuth client in Google Cloud Console
-- **Permission errors**: Make sure the executable has write permissions to the output directory
+### Manual Installation
+```bash
+pip install -r requirements.txt
+```
 
-## License
+### Dependencies
+- `google-auth` - Google authentication
+- `google-auth-oauthlib` - OAuth 2.0 flow
+- `google-api-python-client` - Google Fit API client
+- `pandas` - Data processing
+- `tkinter` - GUI framework (built into Python)
 
-This project is for personal use. Please respect Google's API terms of service.
+## 📱 Platform-Specific Notes
+
+### Windows
+- Uses text symbols instead of emojis for better font compatibility
+- Optimized for Windows 10/11 styling
+- Supports both Command Prompt and PowerShell
+
+### macOS
+- Full emoji support with Apple Color Emoji font
+- Integrates with macOS design language
+- Works on both Intel and Apple Silicon Macs
+
+### Linux
+- Tested on Ubuntu, should work on most distributions
+- Uses system fonts and color schemes
+- Compatible with various desktop environments
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**"OAuth credentials not found"**
+- Ensure environment variables are set correctly
+- Or create `oauth_config.json` file
+- Check Google Cloud Console setup
+
+**"No module named 'tkinter'"**
+- On Ubuntu/Debian: `sudo apt-get install python3-tk`
+- On CentOS/RHEL: `sudo yum install tkinter`
+
+**"Font not found" warnings**
+- Install system fonts: Segoe UI (Windows), SF Pro (macOS), Ubuntu/Noto (Linux)
+
+**API rate limits**
+- Google Fit API has daily quotas
+- Large historical imports may take time
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test on multiple platforms
+5. Submit a pull request
+
+## 📞 Support
+
+- **Issues**: Use GitHub Issues for bug reports
+- **Discussions**: Use GitHub Discussions for questions
+- **Documentation**: Check this README and code comments
+
+---
+
+**Made with ❤️ for cross-platform health data automation**
 
