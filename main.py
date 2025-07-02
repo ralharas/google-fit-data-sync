@@ -5,6 +5,7 @@ import threading
 import time
 import pandas as pd
 import tkinter.messagebox as messagebox
+from time import sleep
 
 from tkinter import Tk, Button, Label
 from google.oauth2.credentials import Credentials
@@ -155,7 +156,10 @@ def run_sync(historical=False):
 
         pd.DataFrame(all_rows).to_csv(output_file, index=False)
         
-        # Collect ALL available health data
+        # Update status for user
+        result_label.config(text="Collecting health data... (this may take a few minutes)")
+        
+        # Collect ALL available health data with rate limiting
         health_data = collect_all_health_data(fitness_service, start_date, end_date, project_root, historical)
         
         if historical:
@@ -226,8 +230,9 @@ def collect_all_health_data(fitness_service, start_date, end_date, project_root,
         }
     }
     
-    for data_type, config in data_sources.items():
+    for i, (data_type, config) in enumerate(data_sources.items()):
         try:
+            result_label.config(text=f"Collecting {data_type} data... ({i+1}/{len(data_sources)})")
             rows = []
             current = start_date
             
@@ -246,6 +251,8 @@ def collect_all_health_data(fitness_service, start_date, end_date, project_root,
                 }
                 
                 try:
+                    # Rate limiting: Wait between requests to avoid quota errors
+                    sleep(2)  # 2 second delay between API calls
                     response = fitness_service.users().dataset().aggregate(userId='me', body=body).execute()
                     
                     for bucket in response['bucket']:
@@ -292,9 +299,15 @@ def collect_all_health_data(fitness_service, start_date, end_date, project_root,
                                     value = point['value'][0]['intVal'] if point['value'] else 0
                                     rows.append({'start': start_dt, 'end': end_dt, 'menstruation_flow': value})
                                 
-                except Exception:
-                    # Data might not be available
-                    pass
+                except Exception as e:
+                    # Handle rate limiting and other errors
+                    if "rateLimitExceeded" in str(e) or "429" in str(e):
+                        result_label.config(text=f"Rate limit hit for {data_type}, waiting 60 seconds...")
+                        sleep(60)  # Wait 1 minute for rate limit reset
+                        continue  # Retry the same request
+                    else:
+                        # Other errors - data might not be available
+                        pass
                     
                 current = next_month
             
