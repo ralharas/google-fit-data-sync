@@ -12,20 +12,20 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-SCOPES = ['https://www.googleapis.com/auth/fitness.activity.read']
-
-# Additional scopes for future use (commented out for simplicity)
-# SCOPES = [
-#     'https://www.googleapis.com/auth/fitness.activity.read',
-#     'https://www.googleapis.com/auth/fitness.body.read',
-#     'https://www.googleapis.com/auth/fitness.location.read',
-#     'https://www.googleapis.com/auth/fitness.nutrition.read',
-#     'https://www.googleapis.com/auth/fitness.blood_pressure.read',
-#     'https://www.googleapis.com/auth/fitness.blood_glucose.read',
-#     'https://www.googleapis.com/auth/fitness.oxygen_saturation.read',
-#     'https://www.googleapis.com/auth/fitness.body_temperature.read',
-#     'https://www.googleapis.com/auth/fitness.reproductive_health.read'
-# ]
+# ALL AVAILABLE Google Fit API scopes for maximum data import
+SCOPES = [
+    'https://www.googleapis.com/auth/fitness.activity.read',
+    'https://www.googleapis.com/auth/fitness.blood_glucose.read',
+    'https://www.googleapis.com/auth/fitness.blood_pressure.read', 
+    'https://www.googleapis.com/auth/fitness.body.read',
+    'https://www.googleapis.com/auth/fitness.heart_rate.read',
+    'https://www.googleapis.com/auth/fitness.body_temperature.read',
+    'https://www.googleapis.com/auth/fitness.location.read',
+    'https://www.googleapis.com/auth/fitness.nutrition.read',
+    'https://www.googleapis.com/auth/fitness.oxygen_saturation.read',
+    'https://www.googleapis.com/auth/fitness.reproductive_health.read',
+    'https://www.googleapis.com/auth/fitness.sleep.read'
+]
 
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
@@ -155,8 +155,8 @@ def run_sync(historical=False):
 
         pd.DataFrame(all_rows).to_csv(output_file, index=False)
         
-        # Additional health data collection (commented out for simplicity)
-        # health_data = collect_all_health_data(fitness_service, start_date, end_date, project_root, historical)
+        # Collect ALL available health data
+        health_data = collect_all_health_data(fitness_service, start_date, end_date, project_root, historical)
         
         if historical:
             result_label.config(text=f"✅ Full history saved!")
@@ -215,6 +215,14 @@ def collect_all_health_data(fitness_service, start_date, end_date, project_root,
         'body_temperature': {
             'dataTypeName': 'com.google.body.temperature',
             'folder': 'BodyTemperature'
+        },
+        'sleep': {
+            'dataTypeName': 'com.google.sleep.segment',
+            'folder': 'Sleep'
+        },
+        'reproductive_health': {
+            'dataTypeName': 'com.google.menstruation',
+            'folder': 'ReproductiveHealth'
         }
     }
     
@@ -258,6 +266,31 @@ def collect_all_health_data(fitness_service, start_date, end_date, project_root,
                                 elif data_type == 'distance':
                                     value = point['value'][0]['fpVal'] if point['value'] else 0
                                     rows.append({'start': start_dt, 'end': end_dt, 'distance_meters': value})
+                                elif data_type == 'height':
+                                    value = point['value'][0]['fpVal'] if point['value'] else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'height_meters': value})
+                                elif data_type == 'body_fat':
+                                    value = point['value'][0]['fpVal'] if point['value'] else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'body_fat_percentage': value})
+                                elif data_type == 'blood_pressure':
+                                    systolic = point['value'][0]['fpVal'] if point['value'] else 0
+                                    diastolic = point['value'][1]['fpVal'] if len(point['value']) > 1 else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'systolic_mmHg': systolic, 'diastolic_mmHg': diastolic})
+                                elif data_type == 'blood_glucose':
+                                    value = point['value'][0]['fpVal'] if point['value'] else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'glucose_mmol_per_L': value})
+                                elif data_type == 'oxygen_saturation':
+                                    value = point['value'][0]['fpVal'] if point['value'] else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'oxygen_saturation_percentage': value})
+                                elif data_type == 'body_temperature':
+                                    value = point['value'][0]['fpVal'] if point['value'] else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'temperature_celsius': value})
+                                elif data_type == 'sleep':
+                                    value = point['value'][0]['intVal'] if point['value'] else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'sleep_type': value})
+                                elif data_type == 'reproductive_health':
+                                    value = point['value'][0]['intVal'] if point['value'] else 0
+                                    rows.append({'start': start_dt, 'end': end_dt, 'menstruation_flow': value})
                                 
                 except Exception:
                     # Data might not be available
@@ -301,7 +334,7 @@ if __name__ == '__main__':
     root.geometry("450x250")
 
     Label(root, text="Connect & Sync ALL Google Fit Data", font=("Helvetica", 14)).pack(pady=20)
-    Label(root, text="Collects: Steps Data Only", font=("Helvetica", 10), fg="gray").pack()
+    Label(root, text="Collects: ALL Google Fit Data (Steps, Heart Rate, Sleep, Weight, etc.)", font=("Helvetica", 10), fg="gray").pack()
     Button(root, text="Start Full Import + Daily Auto", command=start_sync, height=2, width=30).pack(pady=10)
     result_label = Label(root, text="", font=("Helvetica", 12))
     result_label.pack(pady=20)
