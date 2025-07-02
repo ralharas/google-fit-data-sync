@@ -13,11 +13,11 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-# ALL AVAILABLE Google Fit API scopes for maximum data import
+# ALL VALID Google Fit API scopes from your screenshot
 SCOPES = [
     'https://www.googleapis.com/auth/fitness.activity.read',
     'https://www.googleapis.com/auth/fitness.blood_glucose.read',
-    'https://www.googleapis.com/auth/fitness.blood_pressure.read', 
+    'https://www.googleapis.com/auth/fitness.blood_pressure.read',
     'https://www.googleapis.com/auth/fitness.body.read',
     'https://www.googleapis.com/auth/fitness.heart_rate.read',
     'https://www.googleapis.com/auth/fitness.body_temperature.read',
@@ -750,9 +750,10 @@ if __name__ == '__main__':
     
     # Date range info
     info_label = Label(bottom_frame, 
-                      text="📅 Data Range: January 2022 - Present | 🔄 Auto-sync: Every 24 hours", 
-                      font=("Helvetica", 10), 
-                      bg='#f0f0f0', fg='#7f8c8d')
+                      text="📅 Data Range: January 2022 - Present | 🔄 Auto-sync: Every 24 hours\n✅ All Google Fit data types available with comprehensive scopes", 
+                      font=("Helvetica", 9), 
+                      bg='#f0f0f0', fg='#7f8c8d',
+                      justify='center')
     info_label.pack(pady=(0, 15))
     
     # Start button
